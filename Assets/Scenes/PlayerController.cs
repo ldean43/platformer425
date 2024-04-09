@@ -8,43 +8,45 @@ using UnityEngine.UIElements;
 
 public class PlayerController : MonoBehaviour
 {
-    // Start is called before the first frame update
+
     private float mouseX;
     private float mouseY;
+    private float xRotation;
+    private float yRotation;
     private Vector3 moveInput;
     private Vector3 up;
+    private bool jumpQueued;
 
-    [Header("References")]
-    public GameObject player;
     public Rigidbody rb;
     public Transform head;
     public Camera cam;
     public Collider capsule;
 
-    public float xRotation;
-    public float yRotation;
-
-    [Header("Movement")]
+    [Header("Configurations")]
     public float MAX_ACCEL;
     public float MAX_SPEED;
     public float MAX_AIR_ACCEL;
     public float MAX_AIR_SPEED;
+    public float MAX_JUMP;
     public float airControl;
-    public float jump;
-    public float speed;
-    public Vector3 friction;
-    public Vector3 wishDir;
-    public bool jumpQueued;
 
     public float xSens;
     public float ySens;
-
     public bool autoBhop;
-    public float kF; // kinetic friction
+    public float KF;
+
+    [Header("Data")]
+    public float speed;
+    public Vector3 friction;
+    public Vector3 wishDir;
 
     void Start() {
         UnityEngine.Cursor.lockState = CursorLockMode.Locked;
         UnityEngine.Cursor.visible = false;
+
+        rb = gameObject.GetComponent<Rigidbody>();
+        head = gameObject.transform.GetChild(0);
+        cam = GameObject.Find("Camera").GetComponent<Camera>();
         
         rb.velocity = new Vector3(0,0,0);
         wishDir = new Vector3(0,0,0);
@@ -74,93 +76,88 @@ public class PlayerController : MonoBehaviour
     }
 
     private void FixedUpdate() {
-    // Rigid Body Rotation //
-    rb.rotation = Quaternion.Euler(0, yRotation, 0);
 
+    rb.rotation = Quaternion.Euler(0, yRotation, 0); // handle rb rotation at fixed update
+
+        // two styles of movement
         if (isGrounded()) {
             GroundMove();
         } else {
             AirMove();
         }
 
+        // zeroing out velocity if less than threshold
         if (rb.velocity.magnitude < .01) { 
             rb.velocity *= 0; 
         }
 
+        // updating speed data
         speed = new Vector3(rb.velocity.x, 0, rb.velocity.z).magnitude;
     }
     private void AirMove() {
-        wishDir = head.TransformDirection(moveInput);
+        wishDir = head.TransformDirection(moveInput); // Maps moveInput into heads coordinate system.
         wishDir = wishDir.normalized;
 
-        float proj = Vector3.Dot(new Vector3(rb.velocity.x, 0, rb.velocity.z), wishDir);
-        float addSpeed, accel;
+        Accelerate(MAX_AIR_ACCEL, MAX_AIR_SPEED);
 
-        if (proj >= MAX_AIR_SPEED) {
-            return;
-        }
-
-        addSpeed = MAX_AIR_SPEED - proj;
-        accel = MAX_AIR_ACCEL * Time.fixedDeltaTime * MAX_AIR_SPEED;
-
-        if (accel + proj > MAX_AIR_SPEED) {
-            accel = addSpeed;
-        }
-
-        rb.velocity += new Vector3(accel * wishDir.x, 0, accel * wishDir.z);
-
-        //AirControl();
+        AirControl();
     }
 
-    /*private void AirControl() {
+    private void AirControl() {
         float tempY = rb.velocity.y;
-        float speed = rb.velocity.magnitude;
-        Vector3 vel = rb.velocity.normalized;
+        Vector3 vel = rb.velocity;
         vel.y = 0;
+        float currSpeed = vel.magnitude;
+        vel = vel.normalized;
         
         float proj = Vector3.Dot(vel, wishDir);
-        float k = 32;
+        Debug.Log("Proj: " + proj);
+        float k = 10;
         k *= airControl * proj * proj * Time.fixedDeltaTime;
+        Debug.Log("K: " + k);
 
-        vel.x *= speed + k * wishDir.x;
-        vel.y *= speed + k * wishDir.y;
-        vel.z *= speed + k * wishDir.z;
+        if (proj > 0) {
+            vel.x *= currSpeed + k * wishDir.x;
+            vel.z *= currSpeed + k * wishDir.z;
+        }
 
         vel = vel.normalized;
 
-        vel *= speed;
+        vel *= currSpeed;
+        Debug.Log("Vel: " + vel);
         vel.y = tempY;
         rb.velocity = vel;
-    } */
-    private void GroundMove() {
-        wishDir = head.TransformDirection(moveInput);
-        wishDir = wishDir.normalized;
-        rb.velocity += new Vector3(0, -rb.velocity.y, 0);
+    }
 
-        if (!jumpQueued) {
+    private void GroundMove() {
+        wishDir = head.TransformDirection(moveInput); // Maps moveInput into heads coordinate system.
+        wishDir = wishDir.normalized;
+
+        rb.velocity += new Vector3(0, -rb.velocity.y, 0); // zeroing out y position
+
+        if (!jumpQueued) { // 1 frame to avoid friction
             Friction();
         }
 
-        Accelerate();
+        Accelerate(MAX_ACCEL, MAX_SPEED);
 
         if (jumpQueued) {
-            Debug.Log("Frame " + Time.fixedTime + ", Velocity y: " + rb.velocity.y);
-            rb.velocity += jump * up;
+            rb.velocity += MAX_JUMP * up;
             jumpQueued = false;
         }
     }
-    private void Accelerate() {
+    private void Accelerate(float maxAccel, float maxSpeed) {
         float proj = Vector3.Dot(new Vector3(rb.velocity.x, 0, rb.velocity.z), wishDir);
         float addSpeed, accel;
 
-        if (proj >= MAX_SPEED) {
+        if (proj >= maxSpeed) {
             return;
         }
 
-        addSpeed = MAX_SPEED - proj;
-        accel = MAX_ACCEL * Time.fixedDeltaTime * MAX_SPEED;
+        addSpeed = maxSpeed - proj;
+        accel = maxAccel * Time.fixedDeltaTime * maxSpeed;
 
-        if (accel + proj > MAX_SPEED) {
+        if (accel + proj > maxSpeed) {
             accel = addSpeed;
         }
 
@@ -169,20 +166,22 @@ public class PlayerController : MonoBehaviour
 
     private void Friction() {
         if (rb.velocity.magnitude > 0) {
-            friction.x = -kF * rb.velocity.x * Time.fixedDeltaTime;
-            friction.z = -kF * rb.velocity.z * Time.fixedDeltaTime;
+            friction.x = -KF * rb.velocity.x * Time.fixedDeltaTime;
+            friction.z = -KF * rb.velocity.z * Time.fixedDeltaTime;
             rb.velocity += friction;
         }
     }
 
     private void QueueJump() {
         if (autoBhop) {
-            jumpQueued = Input.GetButton("Jump");
+            jumpQueued = Input.GetButton("Jump"); // returns true on hold
             return;
         }
 
-        jumpQueued = Input.GetButtonDown("Jump");
+        jumpQueued = Input.GetButtonDown("Jump"); // returns true during the frame when pressed, false next frame
     }
+
+    // check if capsule cast collides with ground
     private bool isGrounded() {
         return Physics.CheckCapsule(capsule.bounds.center, new Vector3(capsule.bounds.center.x, capsule.bounds.min.y + .09f, capsule.bounds.center.z),
             0.1f);

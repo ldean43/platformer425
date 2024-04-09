@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.44657898, g: 0.4964133, b: 0.5748178, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657844, g: 0.49641222, b: 0.57481676, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -2930,27 +2930,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4bceea4672d60394eac7e6dba93aad79, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player: {fileID: 1856004448}
   rb: {fileID: 1856004449}
   head: {fileID: 1733669691}
   cam: {fileID: 2006022829}
   capsule: {fileID: 1856004450}
-  xRotation: 0
-  yRotation: 0
   MAX_ACCEL: 10
   MAX_SPEED: 7
   MAX_AIR_ACCEL: 20
   MAX_AIR_SPEED: 2
-  airControl: 0.3
-  jump: 5
+  MAX_JUMP: 5
+  airControl: 0.7
+  xSens: 1000
+  ySens: 1000
+  autoBhop: 1
+  KF: 4
   speed: 0
   friction: {x: 0, y: 0, z: 0}
   wishDir: {x: 0, y: 0, z: 0}
-  jumpQueued: 0
-  xSens: 500
-  ySens: 500
-  autoBhop: 1
-  kF: 4
 --- !u!1 &1990835841
 GameObject:
   m_ObjectHideFlags: 0

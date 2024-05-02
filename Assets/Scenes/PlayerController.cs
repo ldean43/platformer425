@@ -16,7 +16,9 @@ public class PlayerController : MonoBehaviour
     private Vector3 moveInput;
     private Vector3 up;
     private bool jumpQueued;
+    private bool sloMo;
 
+    [Header("References")]
     public Rigidbody rb;
     public Transform head;
     public Camera cam;
@@ -24,10 +26,13 @@ public class PlayerController : MonoBehaviour
 
     [Header("Configurations")]
     public float MAX_ACCEL;
+    public float MAX_DECEL;
     public float MAX_SPEED;
     public float MAX_AIR_ACCEL;
+    public float MAX_AIR_DECEL;
     public float MAX_AIR_SPEED;
     public float MAX_JUMP;
+    public float sloMoFactor;
     public float airControl;
 
     public float xSens;
@@ -39,6 +44,7 @@ public class PlayerController : MonoBehaviour
     public float speed;
     public Vector3 friction;
     public Vector3 wishDir;
+    public float timer;
 
     void Start() {
         UnityEngine.Cursor.lockState = CursorLockMode.Locked;
@@ -49,9 +55,12 @@ public class PlayerController : MonoBehaviour
         cam = GameObject.Find("Camera").GetComponent<Camera>();
         
         rb.velocity = new Vector3(0,0,0);
+        cam.fieldOfView = 85;
         wishDir = new Vector3(0,0,0);
         moveInput = new Vector3(0,0,0);
         up = new Vector3(0,1,0);
+        sloMo = false;
+        timer = 2;
     }
 
     void Update() {
@@ -73,11 +82,7 @@ public class PlayerController : MonoBehaviour
         cam.transform.position = head.transform.position;
         QueueJump();
 
-    }
-
-    private void FixedUpdate() {
-
-    rb.rotation = Quaternion.Euler(0, yRotation, 0); // handle rb rotation at fixed update
+        rb.rotation = Quaternion.Euler(0, yRotation, 0); // handle rb rotation at fixed update
 
         // two styles of movement
         if (isGrounded()) {
@@ -91,6 +96,35 @@ public class PlayerController : MonoBehaviour
             rb.velocity *= 0; 
         }
 
+        // SloMo
+        if (Input.GetKey("left shift")){
+            if (!sloMo && timer != 0) {
+                sloMo = true;
+                rb.velocity *= 1/sloMoFactor;
+                Physics.gravity = Physics.gravity/10;
+            } else {
+                if (sloMo && timer <= 0) {
+                    timer = 0;
+                    sloMo = false;
+                    rb.velocity *= sloMoFactor;
+                    Physics.gravity = Physics.gravity * sloMoFactor;
+                } else if (sloMo && timer > 0) {
+                    timer += -Time.deltaTime;
+                }
+            }
+        } else {
+            if (sloMo) {
+                sloMo = false;
+                rb.velocity *= sloMoFactor;
+                Physics.gravity = Physics.gravity * sloMoFactor;
+            }
+            if (timer < 2) {
+                timer += Time.deltaTime;
+            } else {
+                timer = 2;
+            }
+        }
+            
         // updating speed data
         speed = new Vector3(rb.velocity.x, 0, rb.velocity.z).magnitude;
     }
@@ -98,7 +132,11 @@ public class PlayerController : MonoBehaviour
         wishDir = head.TransformDirection(moveInput); // Maps moveInput into heads coordinate system.
         wishDir = wishDir.normalized;
 
-        Accelerate(MAX_AIR_ACCEL, MAX_AIR_SPEED);
+        if (!sloMo) {
+            Accelerate(MAX_AIR_ACCEL, MAX_AIR_DECEL, MAX_AIR_SPEED);
+        } else {
+            Accelerate(MAX_AIR_ACCEL/sloMoFactor, MAX_AIR_DECEL/sloMoFactor, MAX_AIR_SPEED/sloMoFactor);
+        }
 
         AirControl();
     }
@@ -112,14 +150,12 @@ public class PlayerController : MonoBehaviour
         
         float proj = Vector3.Dot(vel, wishDir);
         Debug.Log("Proj: " + proj);
-        float k = 10;
-        k *= airControl * proj * proj * Time.fixedDeltaTime;
+        float k = 32;
+        k *= airControl * proj * proj * Time.deltaTime;
         Debug.Log("K: " + k);
 
-        if (proj > 0) {
-            vel.x *= currSpeed + k * wishDir.x;
-            vel.z *= currSpeed + k * wishDir.z;
-        }
+        vel.x *= currSpeed + k * wishDir.x;
+        vel.z *= currSpeed + k * wishDir.z;
 
         vel = vel.normalized;
 
@@ -139,14 +175,22 @@ public class PlayerController : MonoBehaviour
             Friction();
         }
 
-        Accelerate(MAX_ACCEL, MAX_SPEED);
+        if (!sloMo) {
+            Accelerate(MAX_ACCEL, MAX_DECEL, MAX_SPEED);
+        } else {
+            Accelerate(MAX_ACCEL/sloMoFactor, MAX_DECEL/sloMoFactor, MAX_SPEED/sloMoFactor);
+        }
 
         if (jumpQueued) {
-            rb.velocity += MAX_JUMP * up;
+            if (sloMo) {
+                rb.velocity += MAX_JUMP/sloMoFactor * up;
+            } else {
+                rb.velocity += MAX_JUMP * up;
+            }
             jumpQueued = false;
         }
     }
-    private void Accelerate(float maxAccel, float maxSpeed) {
+    private void Accelerate(float maxAccel, float maxDecel, float maxSpeed) {
         float proj = Vector3.Dot(new Vector3(rb.velocity.x, 0, rb.velocity.z), wishDir);
         float addSpeed, accel;
 
@@ -155,7 +199,11 @@ public class PlayerController : MonoBehaviour
         }
 
         addSpeed = maxSpeed - proj;
-        accel = maxAccel * Time.fixedDeltaTime * maxSpeed;
+        if (proj >= 0){
+            accel = maxAccel * Time.deltaTime * maxSpeed;
+        } else {
+            accel = maxDecel * Time.deltaTime * maxSpeed;
+        }
 
         if (accel + proj > maxSpeed) {
             accel = addSpeed;
@@ -166,8 +214,8 @@ public class PlayerController : MonoBehaviour
 
     private void Friction() {
         if (rb.velocity.magnitude > 0) {
-            friction.x = -KF * rb.velocity.x * Time.fixedDeltaTime;
-            friction.z = -KF * rb.velocity.z * Time.fixedDeltaTime;
+            friction.x = -KF * rb.velocity.x * Time.deltaTime;
+            friction.z = -KF * rb.velocity.z * Time.deltaTime;
             rb.velocity += friction;
         }
     }

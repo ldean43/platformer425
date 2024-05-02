@@ -111,10 +111,10 @@ public class PlayerController : MonoBehaviour
         vel = vel.normalized;
         
         float proj = Vector3.Dot(vel, wishDir);
-        Debug.Log("Proj: " + proj);
+        //Debug.Log("Proj: " + proj);
         float k = 10;
         k *= airControl * proj * proj * Time.fixedDeltaTime;
-        Debug.Log("K: " + k);
+        //Debug.Log("K: " + k);
 
         if (proj > 0) {
             vel.x *= currSpeed + k * wishDir.x;
@@ -124,7 +124,7 @@ public class PlayerController : MonoBehaviour
         vel = vel.normalized;
 
         vel *= currSpeed;
-        Debug.Log("Vel: " + vel);
+        //Debug.Log("Vel: " + vel);
         vel.y = tempY;
         rb.velocity = vel;
     }
@@ -142,6 +142,8 @@ public class PlayerController : MonoBehaviour
         Accelerate(MAX_ACCEL, MAX_SPEED);
 
         if (jumpQueued) {
+            
+            Debug.Log("check jump");
             rb.velocity += MAX_JUMP * up;
             jumpQueued = false;
         }
@@ -172,7 +174,8 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private void QueueJump() {
+    private void QueueJump()
+    {
         if (autoBhop) {
             jumpQueued = Input.GetButton("Jump"); // returns true on hold
             return;

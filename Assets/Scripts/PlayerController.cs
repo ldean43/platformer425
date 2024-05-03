@@ -61,6 +61,8 @@ public class PlayerController : MonoBehaviour
         up = new Vector3(0,1,0);
         sloMo = false;
         timer = 2;
+
+		Physics.queriesHitTriggers = false;
     }
 
     void Update() {
@@ -232,6 +234,6 @@ public class PlayerController : MonoBehaviour
     // check if capsule cast collides with ground
     private bool isGrounded() {
         return Physics.CheckCapsule(capsule.bounds.center, new Vector3(capsule.bounds.center.x, capsule.bounds.min.y + .09f, capsule.bounds.center.z),
-            0.1f);
+            0.1f );
     }
 }

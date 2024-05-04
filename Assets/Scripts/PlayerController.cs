@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.UIElements;
 
 public class PlayerController : MonoBehaviour
@@ -33,6 +34,7 @@ public class PlayerController : MonoBehaviour
     public float MAX_AIR_SPEED;
     public float MAX_JUMP;
     public float sloMoFactor;
+    public float sloMoLength;
     public float airControl;
 
     public float xSens;
@@ -60,9 +62,27 @@ public class PlayerController : MonoBehaviour
         moveInput = new Vector3(0,0,0);
         up = new Vector3(0,1,0);
         sloMo = false;
-        timer = 2;
+        timer = GameSettings.sloMoLength;
 
 		Physics.queriesHitTriggers = false;
+
+        if (GameSettings.autoBhopControl)
+        {
+            GameSettings.autoBhopControl = autoBhop;
+        }
+        autoBhop = GameSettings.autoBhopControl;
+
+        if (GameSettings.fov == 80)
+        {
+            GameSettings.fov = cam.fieldOfView;
+        }
+        cam.fieldOfView = GameSettings.fov;
+
+        if (GameSettings.sloMoLength == 2)
+        {
+            GameSettings.sloMoLength = sloMoLength;
+        }
+        sloMoLength = GameSettings.sloMoLength;      
     }
 
     void Update() {
@@ -120,15 +140,18 @@ public class PlayerController : MonoBehaviour
                 rb.velocity *= sloMoFactor;
                 Physics.gravity = Physics.gravity * sloMoFactor;
             }
-            if (timer < 2) {
+            if (timer < GameSettings.sloMoLength) {
                 timer += Time.deltaTime;
             } else {
-                timer = 2;
+                timer = GameSettings.sloMoLength;
             }
         }
             
         // updating speed data
         speed = new Vector3(rb.velocity.x, 0, rb.velocity.z).magnitude;
+        autoBhop = GameSettings.autoBhopControl;
+        cam.fieldOfView = GameSettings.fov;
+        sloMoLength = GameSettings.sloMoLength;
     }
     private void AirMove() {
         wishDir = head.TransformDirection(moveInput); // Maps moveInput into heads coordinate system.

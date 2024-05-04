@@ -14,7 +14,7 @@ public class SloMoMeter : MonoBehaviour {
     void Start() {
         meter = gameObject.GetComponent<RectTransform>();
         plr = player.GetComponent<PlayerController>();
-        increment = meter.rect.width/2;
+        increment = meter.rect.width/GameSettings.sloMoLength;
     }
 
     // Update is called once per frame

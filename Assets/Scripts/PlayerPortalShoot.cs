@@ -18,13 +18,13 @@ public class PlayerPortalShoot : MonoBehaviour {
 	public GameObject playerCam;
 
 	int layer_no;
-	public string[] layersToDisable;
+	public string[] layersToEnable;
 
 	public bool disable;
 
 	void Start () {
-		layer_no = LayerMask.NameToLayer( "PortalLayer1" );
-		layer_no |= LayerMask.GetMask( layersToDisable );
+		layer_no |= LayerMask.GetMask( layersToEnable );
+		Debug.Log( layer_no );
 	}
 
     static void DrawDebugCube ( Vector3 center, Vector3 scale, Quaternion norm ) {
@@ -53,8 +53,8 @@ public class PlayerPortalShoot : MonoBehaviour {
 		}
 
 		// no portals on top of portals
-		if ( ( hit.collider.gameObject.layer | layer_no ) != 0 ) {
-			Debug.Log( "PortalShoot: SpawnPortal: portal overlap detected" );
+		if ( ( hit.collider.gameObject.layer & layer_no ) == 0 ) {
+			Debug.Log( "PortalShoot: SpawnPortal: invalid layer" );
 			return null;
 		}
 

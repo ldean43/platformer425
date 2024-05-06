@@ -220,5 +220,6 @@ MonoBehaviour:
   toleranceFactor: 1
   player: {fileID: 8214576781337751409}
   playerCam: {fileID: 0}
-  layersToDisable: []
+  layersToEnable:
+  - PortalLayer2
   disable: 0

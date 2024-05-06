@@ -14,7 +14,7 @@ public class PortalCamScript : MonoBehaviour {
 	Camera port_cam;
 
 	RenderTexture rend_tex;
-	MeshRenderer mesh_front, mesh_back;
+	MeshRenderer mesh_front;//, mesh_back;
 
 	public bool disableView = false;
 
@@ -29,7 +29,7 @@ public class PortalCamScript : MonoBehaviour {
 
 	public void HandleOthPort () {
 		if ( oth_port != null ) {
-			port_cam = oth_port.transform.GetChild( 2 ).gameObject.GetComponent<Camera>();
+			port_cam = oth_port.transform.GetChild( 1 ).gameObject.GetComponent<Camera>();
 			port_cam.projectionMatrix = play_cam.projectionMatrix;
 			port_cam.targetTexture = rend_tex;
 		} else {
@@ -41,7 +41,6 @@ public class PortalCamScript : MonoBehaviour {
 		rend_tex = new RenderTexture( Screen.width, Screen.height, 1 );
 
 		mesh_front.material.SetTexture( "_MainTex", rend_tex );
-		mesh_back.material.SetTexture( "_MainTex", rend_tex );
 
 		if ( oth_port != null )
 			port_cam.targetTexture = rend_tex;
@@ -54,7 +53,6 @@ public class PortalCamScript : MonoBehaviour {
 		play_col = player_cam_obj.GetComponent<SphereCollider>();
 
 		mesh_front = gameObject.transform.GetChild( 0 ).gameObject.GetComponent<MeshRenderer>();
-		mesh_back = gameObject.transform.GetChild( 1 ).gameObject.GetComponent<MeshRenderer>();
 
 		play_cam = player_cam_obj.GetComponent<Camera>();
 
@@ -64,14 +62,9 @@ public class PortalCamScript : MonoBehaviour {
     }
 
     void OpacityChange ( float keyframe ) {
-
 		mesh_front.GetPropertyBlock( matBlock );
 		matBlock.SetFloat( "_ColorOpacity", defaultOpacity * ( 1 - keyframe ) + keyframe );
 		mesh_front.SetPropertyBlock( matBlock );
-
-		mesh_back.GetPropertyBlock( matBlock );
-		matBlock.SetFloat( "_ColorOpacity", defaultOpacity * ( 1 - keyframe ) + keyframe );
-		mesh_back.SetPropertyBlock( matBlock );
 	}
 
 	public void FadeInView () {
@@ -116,12 +109,12 @@ public class PortalCamScript : MonoBehaviour {
 // 		CreateRenderTex();
 // 	}
 
-//     TODO: OPTIMIZE THIS
     void Update () {
 		// pointless if no portal
 		if ( oth_port != null && ( !disableView ) ) {
 			// we rotate
-			Quaternion diffRot = Quaternion.Inverse( gameObject.transform.rotation ) * oth_port.transform.rotation;
+			Quaternion oth_port_rot = Quaternion.LookRotation( -oth_port.transform.forward );
+			Quaternion diffRot = Quaternion.Inverse( gameObject.transform.rotation ) * oth_port_rot;
 			port_cam.transform.rotation = player_cam_obj.transform.rotation * diffRot;
 
 			// remove roll

@@ -105,9 +105,9 @@ public class PortalCamScript : MonoBehaviour {
 		yield return null;
 	}
 
-//     private void OnRectTransformDimensionsChange () {
-// 		CreateRenderTex();
-// 	}
+    private void OnRectTransformDimensionsChange () {
+		CreateRenderTex();
+	}
 
     void Update () {
 		// pointless if no portal

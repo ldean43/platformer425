@@ -168,6 +168,10 @@ public class PlayerPortalShoot : MonoBehaviour {
 		}
 	}
 
+	public void ExtUpdatePortals () {
+		StartCoroutine( UpdatePortals() );
+	}
+
 	IEnumerator UpdatePortals () {
 		yield return new WaitForEndOfFrame();
 		UpdateOthPortal( portalInstance1, portalInstance2 );

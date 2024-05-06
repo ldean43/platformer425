@@ -16,10 +16,12 @@ public class LevelSelector : MonoBehaviour
         levelsDropdown.ClearOptions();
         options = new List<string>
         {
-            "Game",
-            "portaltesting",
-            "shadertesting",
-            "SampleScene"
+            "Sample Level - Kane",
+            "Sample Level - Kane 2",
+            "Sample Level - Kane 3",
+            "Sample Level - Kane 4",
+            "Sample Level - Kane 5",
+            "Sample Level - Kane 6"
         };
         levelsDropdown.AddOptions(options);
         levelsDropdown.value = 0;

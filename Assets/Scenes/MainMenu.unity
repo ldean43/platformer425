@@ -7689,7 +7689,7 @@ GameObject:
   - component: {fileID: 2087293740}
   - component: {fileID: 2087293739}
   m_Layer: 5
-  m_Name: Logo
+  m_Name: Panel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

@@ -255,7 +255,7 @@ public class PlayerController : MonoBehaviour
     }
 
     // check if capsule cast collides with ground
-    private bool isGrounded() {
+    public bool isGrounded() {
         return Physics.CheckCapsule(capsule.bounds.center, new Vector3(capsule.bounds.center.x, capsule.bounds.min.y + .09f, capsule.bounds.center.z),
             0.1f );
     }

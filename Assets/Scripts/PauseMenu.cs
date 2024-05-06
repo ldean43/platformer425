@@ -40,7 +40,6 @@ public class PauseMenu : MonoBehaviour
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
-        
 		player.GetComponent<PlayerPortalShoot>().ExtUpdatePortals();
     }
     

@@ -12,6 +12,8 @@ public class PauseMenu : MonoBehaviour
     public GameObject background;
     public GameObject pauseMenu;
     public GameObject pauseOptionMenu;
+	public GameObject player;
+
     // Update is called once per frame
     void Update()
     {
@@ -38,6 +40,7 @@ public class PauseMenu : MonoBehaviour
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+		player.GetComponent<PlayerPortalShoot>().ExtUpdatePortals();
     }
     
     void Pause()

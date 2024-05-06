@@ -19,11 +19,22 @@ public class PlayerController : MonoBehaviour
     private bool jumpQueued;
     private bool sloMo;
 
+    public float xRot
+    {
+        get => xRotation;
+    }
+    public float yRot
+    {
+        get => yRotation;
+    }
+
     [Header("References")]
     public Rigidbody rb;
     public Transform head;
     public Camera cam;
     public Collider capsule;
+    public TMPro.TMP_Text speedIndicator;
+    public PortalGun portalGun;
 
     [Header("Configurations")]
     public float MAX_ACCEL;
@@ -152,6 +163,18 @@ public class PlayerController : MonoBehaviour
         autoBhop = GameSettings.autoBhopControl;
         cam.fieldOfView = GameSettings.fov;
         sloMoLength = GameSettings.sloMoLength;
+        speedIndicator.SetText(speed.ToString("0.00"));
+        speedIndicator.fontSize = speed < 10 ? 5.5f : 4.5f;
+        if (speed >= portalGun.minSpeed)
+        {
+            portalGun.canFire = true;
+            speedIndicator.color = new Color(0, 255, 0);
+        }
+        else
+        {
+            portalGun.canFire = false;
+            speedIndicator.color = new Color(255, 0, 0);
+        }
     }
     private void AirMove() {
         wishDir = head.TransformDirection(moveInput); // Maps moveInput into heads coordinate system.

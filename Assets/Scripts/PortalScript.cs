@@ -20,6 +20,7 @@ public class PortalScript : MonoBehaviour {
 	public float growTime = 1;
 	float grow_keyframe = 0;
 	bool isGrowing = false;
+	IEnumerator growInstance;
 	Vector3 this_scale;
 
 	Vector3 othScl;
@@ -51,7 +52,8 @@ public class PortalScript : MonoBehaviour {
     void OnTriggerEnter ( Collider oth ) {
 		if ( canActivate /* some other cond can go here, ex name of gameobj */ ) {
 			// we rotate
-			Quaternion diffRot = Quaternion.Inverse( gameObject.transform.rotation ) * oth_port.transform.rotation;
+			Quaternion oth_port_rot = Quaternion.LookRotation( -oth_port.transform.forward );
+			Quaternion diffRot = Quaternion.Inverse( gameObject.transform.rotation ) * oth_port_rot; // oth_port.transform.rotation;
 			// fix both camera and player cause they're not the same.
 			player_camera_obj.transform.rotation *= diffRot;
 			player.transform.rotation = player_camera_obj.transform.rotation;
@@ -78,12 +80,13 @@ public class PortalScript : MonoBehaviour {
 		gameObject.transform.localScale = Vector3.zero;
 		grow_keyframe = 0;
 		isGrowing = true;
-
-		StartCoroutine( PortalGrow() );
+		growInstance = PortalGrow();
+		StartCoroutine( growInstance );
 	}
 
 	public void ShrinkAndDestroy () {
 		isGrowing = true;
+		StopCoroutine( growInstance );
 		StartCoroutine( PortalShrink() );
 	}
 

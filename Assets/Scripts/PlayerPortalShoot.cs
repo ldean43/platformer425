@@ -19,6 +19,8 @@ public class PlayerPortalShoot : MonoBehaviour {
 
 	int layer_no;
 
+	public bool disable;
+
 	void Start () {
 		layer_no = LayerMask.NameToLayer( "PortalLayer1" );
 	}
@@ -172,29 +174,27 @@ public class PlayerPortalShoot : MonoBehaviour {
 	}
 
     void Update () {
-        if ( Input.GetKeyDown( "mouse 0" ) ) {
+        if ( Input.GetKeyDown( "mouse 0" ) && ( !disable ) ) {
 			Debug.Log( "PortalShoot: lmb pressed" );
-			if ( portalInstance1 == null ) {
-				Debug.Log( "PortalShoot: Spawning portalInstance1" );
-				portalInstance1 = SpawnPortal( portalPrefab1 );
-			} else {
+			if ( portalInstance1 != null ) {
 				Debug.Log( "PortalShoot: Destroying portalInstance1" );
 				portalInstance1.GetComponent<PortalScript>().ShrinkAndDestroy();
 				portalInstance1 = null;
 			}
+			Debug.Log( "PortalShoot: Spawning portalInstance1" );
+			portalInstance1 = SpawnPortal( portalPrefab1 );
 			StartCoroutine( UpdatePortals() );
 		}
 
-		if ( Input.GetKeyDown( "mouse 1" ) ) {
+		if ( Input.GetKeyDown( "mouse 1" ) && ( !disable ) ) {
 			Debug.Log( "PortalShoot: rmb pressed" );
-			if ( portalInstance2 == null ) {
-				Debug.Log( "PortalShoot: Spawning portalInstance2" );
-				portalInstance2 = SpawnPortal( portalPrefab2 );
-			} else {
+			if ( portalInstance2 != null ) {
 				Debug.Log( "PortalShoot: Destroying portalInstance2" );
 				portalInstance2.GetComponent<PortalScript>().ShrinkAndDestroy();
 				portalInstance2 = null;
 			}
+			Debug.Log( "PortalShoot: Spawning portalInstance2" );
+			portalInstance2 = SpawnPortal( portalPrefab2 );
 			StartCoroutine( UpdatePortals() );
 		}
     }
